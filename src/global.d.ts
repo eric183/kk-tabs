@@ -35,3 +35,16 @@ declare module "*.json" {
   const content: string;
   export default content;
 }
+
+export interface Tab {
+  id: number;
+  label: string;
+  children: Child[];
+}
+
+export interface TabChild {
+  id: number;
+  label: string;
+  iconUrl: string;
+  url: string;
+}

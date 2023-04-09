@@ -13,6 +13,14 @@ const manifest: chrome.runtime.ManifestV3 = {
     service_worker: "src/pages/background/index.js",
     type: "module",
   },
+  permissions: [
+    "identity",
+    "contextMenus",
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs",
+  ],
   action: {
     default_popup: "src/pages/popup/index.html",
     default_icon: "icon-34.png",
