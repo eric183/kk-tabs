@@ -9,7 +9,7 @@ const Newtab = () => {
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
-          Edit <code>src/pages/newtab/Newtab.tsx</code> and save to reload.
+          Edit <code>src/padasfasdf</code> and save to reload.
         </p>
         <a
           className="App-link"
@@ -17,9 +17,9 @@ const Newtab = () => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn React!
+          save{" "}
         </a>
-        <h6>The color of this paragraph is defined using SASS.</h6>
+        <h6>TsadfasdfdsaS.</h6>
       </header>
     </div>
   );
