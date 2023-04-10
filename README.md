@@ -1,5 +1,7 @@
 # KK-tabs
-
+![React](https://img.shields.io/badge/-React-61DAFB?style=flat&logo=react&logoColor=white) ![TypeScript](https://img.shields.io/badge/-TypeScript-blue?style=flat&logo=TypeScript&logoColor=white)
+![Vite](https://img.shields.io/badge/-Vite-green?style=flat&logo=vite&logoColor=white)
+![Node.js](https://img.shields.io/badge/-Node.js-green?style=flat&logo=node.js&logoColor=white)
 Chrome Grouping Keyboard Shortcuts Plugin is a browser extension that makes it easy for users to quickly access and filter their browser's tab groups, with the shortcut `cmd + K`. The plugin is built using React, Vite, TypeScript, and Node.js v16.15.0.
 
 ## Table of Contents
