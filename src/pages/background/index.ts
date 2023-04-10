@@ -17,18 +17,21 @@ reloadOnUpdate("pages/content/style.scss");
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.command === "getTabsInfo") {
-    chrome.tabs.query({}, function (tabs) {
-      const groups = <any>{};
+    chrome.tabs.query({}, (tabs: chrome.tabs.Tab[]) => {
+      const groups = <chrome.tabs.Tab>{};
       for (let i = 0; i < tabs.length; i++) {
         const tab = tabs[i];
+
         const groupId = tab.groupId;
         const title = tab.title;
         const url = tab.url;
         const faviconUrl = tab.favIconUrl;
         if (!groups[groupId]) {
           groups[groupId] = {
+            // ...groups,
             id: groupId,
-            label: "分组 " + groupId,
+            label: `分组: ${groupId}`,
+            title: groups.title,
             children: [],
           };
         }
@@ -37,6 +40,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           label: title,
           iconUrl: faviconUrl,
           url: url,
+          isPlaying: tab.audible,
+          isActive: tab.active,
+          pinned: tab.pinned,
+          parentId: groupId,
         });
       }
       const result = Object.keys(groups).map(function (groupId) {

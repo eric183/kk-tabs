@@ -47,4 +47,9 @@ export interface TabChild {
   label: string;
   iconUrl: string;
   url: string;
+  isActive: boolean;
+  isPlaying: boolean;
+  parentId: number;
+  pinned: boolean;
+  trueIndex: number;
 }
