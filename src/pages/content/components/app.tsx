@@ -191,7 +191,7 @@ export default function App() {
           <MagnifyingGlassIcon className="!absolute !ml-3 !h-4 !top-1/2 !-translate-y-1/2 !text-white"></MagnifyingGlassIcon>
           <input
             ref={inputRef}
-            className="!focus:outline-none !appearance-none !w-full !text-sm !leading-6 !text-white !placeholder-slate-400 !py-4 !pl-10 !bg-gray-900 !shadow-sm !rounded-xl !rounded-b-none"
+            className="!focus:outline-none !appearance-none !w-full !text-[14px] !leading-6 !text-white !placeholder-slate-400 !py-4 !pl-10 !bg-gray-900 !shadow-sm !rounded-xl !rounded-b-none"
             type="text"
             aria-label="Input a tab name"
             placeholder="Input a tab name..."

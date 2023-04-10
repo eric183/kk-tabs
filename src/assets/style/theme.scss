@@ -8,10 +8,16 @@
 
 .kktab-app-content {
   z-index: 10001 !important;
+  font-size: 14px;
+  
 
   ul {
     margin: 0;
   }
+}
+
+.kktab-app-content * {
+  font-size: 14px;
 }
 
 
