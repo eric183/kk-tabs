@@ -48,8 +48,8 @@ export default function App() {
       event.key.toLocaleLowerCase() === "k" &&
       // event.altKey &&
       // event.ctrlKey &&
+      event.metaKey | event.altKey &&
       event.shiftKey &&
-      event.metaKey &&
       !showModal
     ) {
       setShowModal(true);
@@ -111,7 +111,7 @@ export default function App() {
   return (
     showModal && (
       <div
-        className="app-content !fixed !inset-0 !z-[999] !overflow-y-hidden"
+        className="kktab-app-content !fixed !inset-0 !z-[999] !overflow-y-hidden flex items-end justify-center"
         onKeyUp={(event) => {
           console.log(event);
           if (event.key.toLocaleLowerCase() === "enter") {
@@ -155,90 +155,133 @@ export default function App() {
           // console.log(event.target.classList);
         }}
       >
-        <div className="!flex !items-center !justify-center !min-h-screen !pt-4 !px-4 !pb-20 !text-center !sm:block !sm:p-0">
-          <div
-            className="!inset-0 !transition-opacity"
-            aria-hidden="true"
-            onClick={() => setShowModal(false)}
-          >
-            <div className="!absolute !inset-0 !bg-gray-900 !opacity-75"></div>
-          </div>
-          {/* 内容区 */}
+        <div
+          className="!inset-0 !transition-opacity"
+          aria-hidden="true"
+          onClick={() => setShowModal(false)}
+        >
+          <div className="!absolute !inset-0 !bg-gray-900 !opacity-75"></div>
+        </div>
+        {/* 内容区 */}
 
-          <div className="!relative !w-3/5 !bg-gray-900 !max-h-96 !z-30 !rounded-xl !-top-48 border border-gray-400 overflow-y-hidden flex flex-col">
-            <div className="!w-full !relative !border-b">
-              <MagnifyingGlassIcon className="!absolute !ml-3 !h-4 !top-1/2 !-translate-y-1/2 !text-white"></MagnifyingGlassIcon>
-              <input
-                ref={inputRef}
-                className="!focus:outline-none !appearance-none !w-full !text-sm !leading-6 !text-white !placeholder-slate-400 !py-4 !pl-10 !bg-gray-900 !shadow-sm !rounded-xl !rounded-b-none"
-                type="text"
-                aria-label="Input a tab name"
-                placeholder="Input a tab name..."
-                onChange={(evt: ChangeEvent<HTMLInputElement>) =>
-                  setSearchingValue(evt.target.value)
+        <div className="!absolute !w-3/5 !bg-gray-900 !max-h-96 h-80 !z-30 !rounded-xl top-30 border border-gray-400 overflow-y-hidden flex flex-col">
+          <div className="!w-full !relative !border-b">
+            <MagnifyingGlassIcon className="!absolute !ml-3 !h-4 !top-1/2 !-translate-y-1/2 !text-white"></MagnifyingGlassIcon>
+            <input
+              ref={inputRef}
+              className="!focus:outline-none !appearance-none !w-full !text-sm !leading-6 !text-white !placeholder-slate-400 !py-4 !pl-10 !bg-gray-900 !shadow-sm !rounded-xl !rounded-b-none"
+              type="text"
+              aria-label="Input a tab name"
+              placeholder="Input a tab name..."
+              onChange={(evt: ChangeEvent<HTMLInputElement>) =>
+                setSearchingValue(evt.target.value)
+              }
+              value={searchingValue}
+              onKeyUp={(event) => {
+                console.log(event);
+                if (event.key.toLocaleLowerCase() === "enter") {
+                  let currentTab;
+
+                  searchingTabs.some(
+                    (tab) =>
+                      (currentTab = tab.children.find(
+                        (c) => c.trueIndex === seletedIndex
+                      ))
+                  );
+
+                  goTab(currentTab as unknown as TabChild);
+                  // seletedIndex
                 }
-                value={searchingValue}
-              />
-            </div>
 
-            <ul
-              className="flex-1 !overflow-scroll !mt-4 !px-2 !text-gray-200 flex flex-col"
-              ref={scrollRef}
-            >
-              {searchingTabs &&
-                searchingTabs.map((tab, key) => (
-                  <li key={key} className="pl-2 mb-2 flex-1">
-                    <Disclosure defaultOpen>
-                      {({ open }) => (
-                        <>
-                          <Disclosure.Button
-                            className="!text-left !mb-0 cursor-pointer"
-                            as="div"
-                          >
-                            <span className="!text-sm !text-gray-400">
-                              {tab.label}
-                            </span>
-                          </Disclosure.Button>
-                          <Disclosure.Panel
-                            className="!pt-2 !pb-2 !text-sm !text-white"
-                            as="ul"
-                          >
-                            {tab.children.map((t: TabChild, tk) => {
-                              return (
-                                <li
-                                  data-index={t.trueIndex}
-                                  key={tk}
-                                  className={`!flex !items-center !leading-10 mr-5 hover:bg-slate-200/25 !rounded-md !overflow-x-hidden truncate ${
-                                    seletedIndex === t.trueIndex
-                                      ? "bg-slate-200/25"
-                                      : ""
-                                  }`}
-                                >
-                                  <img
-                                    src={t.iconUrl}
-                                    className="rounded-2xl w-5 ml-1.5 mr-2"
-                                  />
-                                  <span
-                                    className="!w-full !cursor-pointer !text-left !whitespace-nowrap"
-                                    onClick={() => goTab(t)}
-                                  >
-                                    {t.label}
-                                  </span>
+                if (event.key.toLocaleLowerCase() === "arrowup") {
+                  if (seletedIndex >= 0) {
+                    setSelectedIndex(() => seletedIndex - 1);
 
-                                  {t.isPlaying && (
-                                    <SpeakerWaveIcon className="!ml-3 !h-4 !text-white" />
-                                  )}
-                                </li>
-                              );
-                            })}
-                          </Disclosure.Panel>
-                        </>
-                      )}
-                    </Disclosure>
-                  </li>
-                ))}
-            </ul>
+                    document
+                      .querySelector(`[data-index="${seletedIndex - 1}"]`)
+                      .scrollIntoView();
+                  }
+                }
+
+                if (event.key.toLocaleLowerCase() === "arrowdown") {
+                  const maxIndex = searchingTabs.reduce(
+                    (pre, next) => pre + next.children.length,
+                    0
+                  );
+
+                  if (seletedIndex < maxIndex - 1) {
+                    setSelectedIndex(() => seletedIndex + 1);
+
+                    document
+                      .querySelector(`[data-index="${seletedIndex + 1}"]`)
+                      .scrollIntoView();
+                  }
+                }
+                // console.log(event.target.classList);
+              }}
+            />
           </div>
+
+          <ul
+            className="flex-1 !overflow-scroll !mt-4 !px-2 !text-gray-200 flex flex-col ios-scroll min-h-min"
+            ref={scrollRef}
+          >
+            {searchingTabs &&
+              searchingTabs.map(
+                (tab, key) =>
+                  tab.children.length > 0 && (
+                    <li key={key} className="pl-2 mb-2 flex-1">
+                      <Disclosure defaultOpen>
+                        {({ open }) => (
+                          <>
+                            <Disclosure.Button
+                              className="!text-left !mb-0 cursor-pointer"
+                              as="div"
+                            >
+                              <span className="!text-sm !text-gray-400">
+                                {tab.label}
+                              </span>
+                            </Disclosure.Button>
+                            <Disclosure.Panel
+                              className="!pt-2 !pb-2 !text-sm !text-white"
+                              as="ul"
+                            >
+                              {tab.children.map((t: TabChild, tk) => {
+                                return (
+                                  <li
+                                    data-index={t.trueIndex}
+                                    key={tk}
+                                    className={`!flex !items-center !leading-10 mr-5 hover:bg-slate-200/25 !rounded-md !overflow-x-hidden truncate ${
+                                      seletedIndex === t.trueIndex
+                                        ? "bg-slate-200/25"
+                                        : ""
+                                    }`}
+                                  >
+                                    <img
+                                      src={t.iconUrl}
+                                      className="rounded-2xl w-5 ml-1.5 mr-2"
+                                    />
+                                    <span
+                                      className="!w-full !cursor-pointer !text-left !whitespace-nowrap"
+                                      onClick={() => goTab(t)}
+                                    >
+                                      {t.label}
+                                    </span>
+
+                                    {t.isPlaying && (
+                                      <SpeakerWaveIcon className="!ml-3 !h-4 !text-white" />
+                                    )}
+                                  </li>
+                                );
+                              })}
+                            </Disclosure.Panel>
+                          </>
+                        )}
+                      </Disclosure>
+                    </li>
+                  )
+              )}
+          </ul>
         </div>
       </div>
     )

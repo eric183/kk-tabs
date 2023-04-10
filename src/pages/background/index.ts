@@ -30,7 +30,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           groups[groupId] = {
             // ...groups,
             id: groupId,
-            label: `分组: ${groupId}`,
+            label: `group: ${groupId}`,
             title: groups.title,
             children: [],
           };

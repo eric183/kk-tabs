@@ -23,13 +23,21 @@ const manifest: chrome.runtime.ManifestV3 = {
   ],
   action: {
     default_popup: "src/pages/popup/index.html",
-    default_icon: "icon-34.png",
+    default_icon: {
+      "16": "favicon-16x16.png",
+      "32": "favicon-32x32.png",
+      "96": "favicon-96x96.png",
+      "128": "favicon-128x128.png",
+    },
   },
   // chrome_url_overrides: {
   //   newtab: "src/pages/newtab/index.html",
   // },
   icons: {
-    "128": "icon-128.png",
+    "16": "favicon-16x16.png",
+    "32": "favicon-32x32.png",
+    "96": "favicon-96x96.png",
+    "128": "favicon-128x128.png",
   },
   content_scripts: [
     {
@@ -45,8 +53,12 @@ const manifest: chrome.runtime.ManifestV3 = {
       resources: [
         "assets/js/*.js",
         "assets/css/*.css",
-        "icon-128.png",
-        "icon-34.png",
+        "cat-128.png",
+        "cat-34.png",
+        "favicon-16x16.png",
+        "favicon-32x32.png",
+        "favicon-96x96.png",
+        "favicon-128x128.png",
       ],
       matches: ["*://*/*"],
     },

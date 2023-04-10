@@ -1,11 +1,11 @@
 {
-  "name": "chrome-extension-boilerplate-react-vite",
+  "name": "kk-tabs",
   "version": "0.0.1",
   "description": "chrome extension boilerplate",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite.git"
+    "url": "https://github.com/eric183/kk-tabs.git"
   },
   "scripts": {
     "build": "tsc --noEmit && vite build",
