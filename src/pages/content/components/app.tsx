@@ -52,6 +52,7 @@ export default function App() {
   }, [searchingValue, tabs]);
 
   const handleKeyPress = (event) => {
+    console.log(event.key.toLocaleLowerCase());
     if (
       event.key.toLocaleLowerCase() === "k" &&
       // event.altKey &&
@@ -62,6 +63,13 @@ export default function App() {
     ) {
       setShowModal(true);
       return;
+    }
+
+    if (event.key.toLocaleLowerCase() === "esc") {
+      setShowModal(false);
+    }
+    if (event.key.toLocaleLowerCase() === "escape") {
+      setShowModal(false);
     }
     // setShowModal(false);
   };
@@ -157,7 +165,7 @@ export default function App() {
     }, 100);
   }, [showModal]);
 
-  useLayoutEffect(() => {}, []);
+  // useLayoutEffect(() => {}, []);
 
   return (
     <div
