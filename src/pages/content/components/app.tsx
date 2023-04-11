@@ -157,14 +157,12 @@ export default function App() {
     }, 100);
   }, [showModal]);
 
-  useLayoutEffect(() => {
-    // adjustFontSize();
-  }, []);
+  useLayoutEffect(() => {}, []);
 
   return (
     <div
-      className={`kktab-app-content !fixed !inset-0 !z-[999] !overflow-y-hidden flex items-end justify-center ${
-        showModal ? "flex" : "hidden"
+      className={`kktab-app-content !fixed !inset-0 !z-[999] !overflow-y-hidden items-end justify-center ${
+        showModal ? "!flex" : "!hidden"
       }`}
     >
       <div
