@@ -1,3 +1,4 @@
+import { group } from "console";
 import reloadOnUpdate from "virtual:reload-on-update-in-background-script";
 
 reloadOnUpdate("pages/background");
@@ -14,42 +15,59 @@ reloadOnUpdate("pages/content/style.scss");
 //   chrome.storage.sync.set({ color });
 //   chrome.storage.sync.set({ email: "" });
 // });
+// chrome.tabs.query({}, (tabs) => {
+//   tabs.forEach(function (tab) {
+
+//   });
+// });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.command === "getTabsInfo") {
-    chrome.tabs.query({}, (tabs: chrome.tabs.Tab[]) => {
-      const groups = <chrome.tabs.Tab>{};
-      for (let i = 0; i < tabs.length; i++) {
-        const tab = tabs[i];
+    let test_groups = [];
 
-        const groupId = tab.groupId;
-        const title = tab.title;
-        const url = tab.url;
-        const faviconUrl = tab.favIconUrl;
-        if (!groups[groupId]) {
-          groups[groupId] = {
-            // ...groups,
-            id: groupId,
-            label: `group: ${groupId}`,
-            title: groups.title,
-            children: [],
-          };
-        }
-        groups[groupId].children.push({
-          id: tab.id,
-          label: title,
-          iconUrl: faviconUrl,
-          url: url,
-          isPlaying: tab.audible,
-          isActive: tab.active,
-          pinned: tab.pinned,
-          parentId: groupId,
+    chrome.tabGroups.query({ collapsed: false }, (groups) => {
+      test_groups = [...test_groups, ...groups];
+      chrome.tabGroups.query({ collapsed: true }, (groups) => {
+        test_groups = [...test_groups, ...groups];
+
+        chrome.tabs.query({}, (tabs: chrome.tabs.Tab[]) => {
+          const groups = <chrome.tabs.Tab>{};
+
+          for (let i = 0; i < tabs.length; i++) {
+            const tab = tabs[i];
+
+            const groupId = tab.groupId;
+            const title = tab.title;
+            const url = tab.url;
+            const faviconUrl = tab.favIconUrl;
+            if (!groups[groupId]) {
+              const FIND_GROUP = test_groups.find((g) => g.id === groupId);
+              groups[groupId] = {
+                // ...groups,
+                id: groupId,
+                label: `group: ${groupId}`,
+                title: FIND_GROUP ? FIND_GROUP.title : "",
+                children: [],
+              };
+            }
+            groups[groupId].children.push({
+              id: tab.id,
+              label: title,
+              iconUrl: faviconUrl,
+              url: url,
+              isPlaying: tab.audible,
+              isActive: tab.active,
+              pinned: tab.pinned,
+              parentId: groupId,
+            });
+          }
+          const result = Object.keys(groups).map(function (groupId) {
+            return groups[groupId];
+          });
+
+          sendResponse({ tabs: result });
         });
-      }
-      const result = Object.keys(groups).map(function (groupId) {
-        return groups[groupId];
       });
-      sendResponse({ tabs: result });
     });
   }
   return true;

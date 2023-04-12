@@ -39,6 +39,7 @@ declare module "*.json" {
 export interface Tab {
   id: number;
   label: string;
+  title: string;
   children: Child[];
 }
 

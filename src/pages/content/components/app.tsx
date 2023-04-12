@@ -97,6 +97,7 @@ export default function App() {
   const queryTabs = () => {
     chrome.runtime.sendMessage({ command: "getTabsInfo" }, (response) => {
       console.log(response.tabs);
+      console.log(response, "whole");
 
       setTabs(response.tabs);
       // Do something with the tabs info
@@ -287,7 +288,7 @@ export default function App() {
                               as="div"
                             >
                               <span className="!text-sm !text-gray-400">
-                                {tab.label}
+                                {tab.title ? tab.title : "Others"}
                               </span>
                             </Disclosure.Button>
                             <Disclosure.Panel

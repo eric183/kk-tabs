@@ -20,6 +20,7 @@ const manifest: chrome.runtime.ManifestV3 = {
     "activeTab",
     "scripting",
     "tabs",
+    "tabGroups",
   ],
   action: {
     default_popup: "src/pages/popup/index.html",
