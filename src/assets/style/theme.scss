@@ -10,11 +10,35 @@
   z-index: 10001 !important;
   font-size: 14px;
   
+  .InputLeft-element {
+    width: 20px;
+    height: 20px;
+    left: 10px !important;
+  }
+
+  .kk-input {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  img {
+    min-height: 0;
+  }
 
   ul {
     margin: 0;
     padding-left: 0 !important;
   }
+
+  .logoImage {
+    margin-bottom: 0;
+    margin-right: 1rem !important;
+  }
+  
+  .left-element {
+    transform: translateY(-50%) !important;
+  }
+
 }
 
 .kktab-app-content * {
@@ -78,11 +102,4 @@
   background-color: #f1f1f1;
 }
 
-.logoImage {
-  margin-bottom: 0;
-  margin-right: 1rem !important;
-}
 
-.searchIcon {
-  transform: translateY(-50%) !important;
-}

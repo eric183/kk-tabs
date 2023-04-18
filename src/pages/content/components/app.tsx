@@ -10,11 +10,13 @@ import {
 } from "react";
 import {
   ChevronUpIcon,
+  HashtagIcon,
   MagnifyingGlassIcon,
   SpeakerWaveIcon,
   SpeakerXMarkIcon,
 } from "@heroicons/react/20/solid";
 import { Tab, TabChild } from "virtual:reload-on-update-in-background-script";
+import { Input, InputGroup, InputLeftElement } from "@chakra-ui/react";
 
 export default function App() {
   const [showModal, setShowModal] = useState(false);
@@ -25,14 +27,74 @@ export default function App() {
   const [seletedIndex, setSelectedIndex] = useState<number>(-1);
 
   const inputRef = useRef<HTMLInputElement>(null!);
+  const disInputRef = useRef<HTMLInputElement>(null!);
   const scrollRef = useRef<HTMLUListElement>(null!);
+
+  const getHashValue = (searchingValue: string, tabs: Tab[]) => {
+    const currentHashTabs: Tab[] = [];
+    let trueIndex = 0;
+
+    tabs.forEach((tab) => {
+      tab.children.forEach((c: TabChild) => {
+        const link_label = c.url.replace(
+          /http(s?):\/\/([0-9a-zA-Z]+\.)?([0-9a-zA-Z-_]+)\.[a-z]+(\/?).+/,
+          "$3"
+        );
+
+        const _tab = currentHashTabs.find((x) => x.label === link_label);
+
+        if (_tab) {
+          _tab.children.push(c);
+        } else {
+          const newTab: Tab = {
+            children: [c],
+            id: currentHashTabs.length + 1,
+            title: link_label.replace(
+              /http(s?):\/\/([a-zA-Z]+\.)?([a-zA-Z]+)\.[a-z]+(\/?).+/,
+              "$3"
+            ),
+            // title: link_label.replace(
+            //   /http(s?):\/\/([a-z]+?)\.([a-z]+)\.[a-z]+.+/,
+            //   "$2"
+            // ),
+            label: link_label,
+          };
+          currentHashTabs.push(newTab);
+          // currentHashTabs.push();
+        }
+      });
+    });
+    console.log(currentHashTabs);
+
+    return currentHashTabs?.map((tab) => {
+      return {
+        ...tab,
+        children: tab.children.filter((f) => {
+          if (
+            f.label
+              .toLocaleLowerCase()
+              .includes(searchingValue.toLocaleLowerCase().replace("#", ""))
+          ) {
+            f.trueIndex = trueIndex;
+            trueIndex++;
+            return true;
+          }
+        }),
+      };
+    });
+  };
 
   const searchingTabs = useMemo(() => {
     let trueIndex = 0;
 
+    if (searchingValue.startsWith("#")) {
+      return getHashValue(searchingValue, tabs);
+    }
+
     if (searchingValue.startsWith("/")) {
       return tabs;
     }
+
     return tabs?.map((tab) => {
       return {
         ...tab,
@@ -185,7 +247,6 @@ export default function App() {
 
       <div className="!absolute !w-3/5 !bg-gray-900 h-[50%] !z-30 !rounded-xl top-[10%] border border-gray-400 overflow-y-hidden flex flex-col kktab-app-list">
         <div className="!w-full !relative !border-b flex items-center">
-          <MagnifyingGlassIcon className="!absolute !ml-3 !h-4 !top-1/2 !-translate-y-1/2 !text-white searchIcon"></MagnifyingGlassIcon>
           {/* to done */}
           {/* {!searchingValue.startsWith("/") && (
             <MagnifyingGlassIcon className="!absolute !ml-3 !h-4 !top-1/2 !-translate-y-1/2 !text-white"></MagnifyingGlassIcon>
@@ -196,67 +257,156 @@ export default function App() {
             <MagnifyingGlassIcon className="!absolute !ml-3 !h-4 !top-1/2 !-translate-y-1/2 !text-white"></MagnifyingGlassIcon>
           )} */}
           {/* {Badges} */}
-          <input
-            ref={inputRef}
-            className="!focus:outline-none !appearance-none !w-full !text-[14px] !leading-6 !text-white !placeholder-slate-400 !py-4 !pl-10 !bg-gray-900 !shadow-sm !rounded-xl !rounded-b-none"
-            type="text"
-            aria-label="Input a tab name"
-            placeholder="Input a tab name..."
-            onChange={(evt: ChangeEvent<HTMLInputElement>) => {
-              setSearchingValue(evt.target.value);
-
-              if (evt.target.value.startsWith("/")) {
-                setSlash(true);
-
-                return;
+          <InputGroup className="flex items-center">
+            <InputLeftElement
+              className="InputLeft-element !top-1/2"
+              pointerEvents="none"
+              // eslint-disable-next-line react/no-children-prop
+              children={
+                searchingValue.startsWith("#") ? (
+                  <HashtagIcon className="left-element !text-green-500"></HashtagIcon>
+                ) : (
+                  <MagnifyingGlassIcon className="!text-white left-element"></MagnifyingGlassIcon>
+                )
               }
+            />
+            {searchingValue.startsWith("#") && (
+              <Input
+                ref={disInputRef}
+                className="kk-input !focus:outline-none !appearance-none !w-full !text-[14px] !leading-6 !text-white !placeholder-slate-400 !py-4 !pl-10 !bg-gray-900 !shadow-sm !rounded-xl !rounded-b-none"
+                type="text"
+                aria-label="Input a tab name"
+                placeholder="Input a tab name..."
+                onChange={(evt: React.ChangeEvent<HTMLInputElement> | any) => {
+                  if (
+                    evt.nativeEvent.inputType === "deleteContentBackward" &&
+                    disInputRef.current.value.length === 0
+                  ) {
+                    setSearchingValue("");
+                    setTimeout(() => {
+                      inputRef.current.focus();
+                    }, 0);
+                    return;
+                  }
+                  setSearchingValue("#" + evt.target.value);
+                }}
+                onKeyUp={(event) => {
+                  if (isSlash) return;
+                  if (event.key.toLocaleLowerCase() === "enter") {
+                    let currentTab;
 
-              setSlash(false);
-            }}
-            value={searchingValue}
-            onKeyUp={(event) => {
-              if (isSlash) return;
-              if (event.key.toLocaleLowerCase() === "enter") {
-                let currentTab;
+                    searchingTabs.some(
+                      (tab) =>
+                        (currentTab = tab.children.find(
+                          (c) => c.trueIndex === seletedIndex
+                        ))
+                    );
 
-                searchingTabs.some(
-                  (tab) =>
-                    (currentTab = tab.children.find(
-                      (c) => c.trueIndex === seletedIndex
-                    ))
-                );
+                    goTab(currentTab as unknown as TabChild);
+                    // seletedIndex
+                  }
 
-                goTab(currentTab as unknown as TabChild);
-                // seletedIndex
-              }
+                  if (event.key.toLocaleLowerCase() === "arrowup") {
+                    if (seletedIndex >= 0) {
+                      setSelectedIndex(() => seletedIndex - 1);
 
-              if (event.key.toLocaleLowerCase() === "arrowup") {
-                if (seletedIndex >= 0) {
-                  setSelectedIndex(() => seletedIndex - 1);
+                      document
+                        .querySelector(`[data-index="${seletedIndex - 1}"]`)
+                        .scrollIntoView();
+                    }
+                  }
 
-                  document
-                    .querySelector(`[data-index="${seletedIndex - 1}"]`)
-                    .scrollIntoView();
-                }
-              }
+                  if (event.key.toLocaleLowerCase() === "arrowdown") {
+                    const maxIndex = searchingTabs.reduce(
+                      (pre, next) => pre + next.children.length,
+                      0
+                    );
 
-              if (event.key.toLocaleLowerCase() === "arrowdown") {
-                const maxIndex = searchingTabs.reduce(
-                  (pre, next) => pre + next.children.length,
-                  0
-                );
+                    if (seletedIndex < maxIndex - 1) {
+                      setSelectedIndex(() => seletedIndex + 1);
 
-                if (seletedIndex < maxIndex - 1) {
-                  setSelectedIndex(() => seletedIndex + 1);
+                      document
+                        .querySelector(`[data-index="${seletedIndex + 1}"]`)
+                        .scrollIntoView();
+                    }
+                  }
+                  // console.log(event.target.classList);
+                }}
+              />
+            )}
 
-                  document
-                    .querySelector(`[data-index="${seletedIndex + 1}"]`)
-                    .scrollIntoView();
-                }
-              }
-              // console.log(event.target.classList);
-            }}
-          />
+            {!searchingValue.startsWith("#") && (
+              <Input
+                ref={inputRef}
+                className="kk-input !focus:outline-none !appearance-none !w-full !text-[14px] !leading-6 !text-white !placeholder-slate-400 !py-4 !pl-10 !bg-gray-900 !shadow-sm !rounded-xl !rounded-b-none"
+                type="text"
+                aria-label="Input a tab name"
+                placeholder="Input a tab name..."
+                onChange={(evt: ChangeEvent<HTMLInputElement>) => {
+                  setSearchingValue(evt.target.value);
+
+                  if (evt.target.value.startsWith("/")) {
+                    setSlash(true);
+
+                    return;
+                  }
+
+                  if (evt.target.value.startsWith("#")) {
+                    setTimeout(() => {
+                      disInputRef.current.focus();
+                    }, 0);
+
+                    return;
+                  }
+
+                  setSlash(false);
+                }}
+                value={searchingValue}
+                onKeyDown={(event) => {
+                  if (isSlash) return;
+                  if (event.key.toLocaleLowerCase() === "enter") {
+                    let currentTab;
+
+                    searchingTabs.some(
+                      (tab) =>
+                        (currentTab = tab.children.find(
+                          (c) => c.trueIndex === seletedIndex
+                        ))
+                    );
+
+                    goTab(currentTab as unknown as TabChild);
+                    // seletedIndex
+                  }
+
+                  if (event.key.toLocaleLowerCase() === "arrowup") {
+                    if (seletedIndex >= 0) {
+                      setSelectedIndex(() => seletedIndex - 1);
+
+                      document
+                        .querySelector(`[data-index="${seletedIndex - 1}"]`)
+                        .scrollIntoView();
+                    }
+                  }
+
+                  if (event.key.toLocaleLowerCase() === "arrowdown") {
+                    const maxIndex = searchingTabs.reduce(
+                      (pre, next) => pre + next.children.length,
+                      0
+                    );
+
+                    if (seletedIndex < maxIndex - 1) {
+                      setSelectedIndex(() => seletedIndex + 1);
+
+                      document
+                        .querySelector(`[data-index="${seletedIndex + 1}"]`)
+                        .scrollIntoView();
+                    }
+                  }
+                  // console.log(event.target.classList);
+                }}
+              />
+            )}
+          </InputGroup>
         </div>
 
         {isSlash ? (
@@ -287,7 +437,7 @@ export default function App() {
                               className="!text-left !mb-0 cursor-pointer"
                               as="div"
                             >
-                              <span className="!text-sm !text-gray-400">
+                              <span className="!text-[12px] !text-gray-400">
                                 {tab.title ? tab.title : "Others"}
                               </span>
                             </Disclosure.Button>
