@@ -52,7 +52,7 @@ export default function App() {
   }, [searchingValue, tabs]);
 
   const handleKeyPress = (event) => {
-    console.log(event.key.toLocaleLowerCase());
+    // console.log(event.key.toLocaleLowerCase());
     if (
       event.key.toLocaleLowerCase() === "k" &&
       // event.altKey &&
@@ -82,7 +82,7 @@ export default function App() {
     chrome.runtime.sendMessage(
       { command: "switchToTab", tabId: tab.id },
       (response) => {
-        console.log(response.result);
+        // console.log(response.result);
       }
     );
   };
@@ -96,8 +96,8 @@ export default function App() {
 
   const queryTabs = () => {
     chrome.runtime.sendMessage({ command: "getTabsInfo" }, (response) => {
-      console.log(response.tabs);
-      console.log(response, "whole");
+      // console.log(response.tabs);
+      // console.log(response, "whole");
 
       setTabs(response.tabs);
       // Do something with the tabs info
@@ -185,7 +185,7 @@ export default function App() {
 
       <div className="!absolute !w-3/5 !bg-gray-900 h-[50%] !z-30 !rounded-xl top-[10%] border border-gray-400 overflow-y-hidden flex flex-col kktab-app-list">
         <div className="!w-full !relative !border-b flex items-center">
-          <MagnifyingGlassIcon className="!absolute !ml-3 !h-4 !top-1/2 !-translate-y-1/2 !text-white"></MagnifyingGlassIcon>
+          <MagnifyingGlassIcon className="!absolute !ml-3 !h-4 !top-1/2 !-translate-y-1/2 !text-white searchIcon"></MagnifyingGlassIcon>
           {/* to done */}
           {/* {!searchingValue.startsWith("/") && (
             <MagnifyingGlassIcon className="!absolute !ml-3 !h-4 !top-1/2 !-translate-y-1/2 !text-white"></MagnifyingGlassIcon>
@@ -308,7 +308,7 @@ export default function App() {
                                   >
                                     <img
                                       src={t.iconUrl}
-                                      className="rounded-2xl w-5 ml-1.5 mr-2"
+                                      className="logoImage rounded-2xl w-5 ml-1.5 mr-2"
                                     />
                                     <span
                                       className="!w-full !cursor-pointer !text-left !whitespace-nowrap"

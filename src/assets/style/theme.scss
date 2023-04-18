@@ -1,4 +1,4 @@
-@tailwind base;
+// @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -13,14 +13,13 @@
 
   ul {
     margin: 0;
+    padding-left: 0 !important;
   }
 }
 
 .kktab-app-content * {
   font-size: 14px;
 }
-
-
 
 
 /* 隱藏默認滾動條 */
@@ -77,4 +76,13 @@
 /* 設置滾動條角落樣式 */
 .ios-scroll::-webkit-scrollbar-corner {
   background-color: #f1f1f1;
+}
+
+.logoImage {
+  margin-bottom: 0;
+  margin-right: 1rem !important;
+}
+
+.searchIcon {
+  transform: translateY(-50%) !important;
 }

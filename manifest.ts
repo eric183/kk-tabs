@@ -5,7 +5,7 @@ import packageJson from "./package.json";
  */
 const manifest: chrome.runtime.ManifestV3 = {
   manifest_version: 3,
-  name: packageJson.name,
+  name: "kk tab",
   version: packageJson.version,
   description: packageJson.description,
   options_page: "src/pages/options/index.html",
@@ -14,11 +14,11 @@ const manifest: chrome.runtime.ManifestV3 = {
     type: "module",
   },
   permissions: [
-    "identity",
-    "contextMenus",
-    "storage",
+    // "identity",
+    // "contextMenus",
+    // "storage",
+    // "scripting",
     "activeTab",
-    "scripting",
     "tabs",
     "tabGroups",
   ],
