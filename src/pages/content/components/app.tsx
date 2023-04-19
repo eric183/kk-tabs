@@ -10,6 +10,7 @@ import {
 } from "react";
 import {
   ChevronUpIcon,
+  CubeIcon,
   HashtagIcon,
   MagnifyingGlassIcon,
   SpeakerWaveIcon,
@@ -17,6 +18,7 @@ import {
 } from "@heroicons/react/20/solid";
 import { Tab, TabChild } from "virtual:reload-on-update-in-background-script";
 import { Input, InputGroup, InputLeftElement } from "@chakra-ui/react";
+import { normalize } from "path";
 
 export default function App() {
   const [showModal, setShowModal] = useState(false);
@@ -28,8 +30,8 @@ export default function App() {
 
   const inputRef = useRef<HTMLInputElement>(null!);
   const disInputRef = useRef<HTMLInputElement>(null!);
+  const disAtInputRef = useRef<HTMLInputElement>(null!);
   const scrollRef = useRef<HTMLUListElement>(null!);
-
   const getHashValue = (searchingValue: string, tabs: Tab[]) => {
     const currentHashTabs: Tab[] = [];
     let trueIndex = 0;
@@ -64,7 +66,6 @@ export default function App() {
         }
       });
     });
-    console.log(currentHashTabs);
 
     return currentHashTabs?.map((tab) => {
       return {
@@ -84,6 +85,43 @@ export default function App() {
     });
   };
 
+  const getAttributeValue = (searchingValue: string, tabs: Tab[]) => {
+    const trueIndex = 0;
+
+    console.log(searchingValue, tabs);
+
+    const matchCondition = (value) => {
+      value = value.slice(1);
+      switch (value) {
+        case "playing": {
+          return true;
+        }
+
+        case "play": {
+          return true;
+        }
+
+        default: {
+          return false;
+        }
+      }
+    };
+
+    return tabs?.map((tab) => {
+      return {
+        ...tab,
+        children:
+          searchingValue.length > 0
+            ? tab.children.filter((tc) => {
+                if (matchCondition(searchingValue) && tc.audible) {
+                  return true;
+                }
+              })
+            : tab.children,
+      };
+    });
+  };
+
   const searchingTabs = useMemo(() => {
     let trueIndex = 0;
 
@@ -91,8 +129,8 @@ export default function App() {
       return getHashValue(searchingValue, tabs);
     }
 
-    if (searchingValue.startsWith("/")) {
-      return tabs;
+    if (searchingValue.startsWith("@")) {
+      return getAttributeValue(searchingValue, tabs);
     }
 
     return tabs?.map((tab) => {
@@ -228,6 +266,34 @@ export default function App() {
     }, 100);
   }, [showModal]);
 
+  const isNormalized = () => {
+    if (searchingValue.startsWith("#") || searchingValue.startsWith("@")) {
+      return false;
+    }
+
+    return true;
+  };
+
+  const muteBinder = (tab: TabChild) => {
+    chrome.runtime.sendMessage(
+      { command: "muteTab", tabId: tab.id },
+      (responseTab: { id: number; muted: boolean }) => {
+        console.log(responseTab, "...");
+
+        const currentTabs = tabs?.map((tab) => {
+          tab.children.forEach((tc: TabChild) => {
+            if (tc.id === responseTab.id) {
+              tc.muted = responseTab.muted;
+            }
+          });
+          return tab;
+        });
+
+        setTabs(currentTabs);
+      }
+    );
+  };
+
   // useLayoutEffect(() => {}, []);
 
   return (
@@ -245,7 +311,7 @@ export default function App() {
       </div>
       {/* 内容区 */}
 
-      <div className="!absolute !w-3/5 !bg-gray-900 h-[50%] !z-30 !rounded-xl top-[10%] border border-gray-400 overflow-y-hidden flex flex-col kktab-app-list">
+      <div className="kktab-app-list !absolute !w-3/5 !bg-gray-900 h-[50%] !z-30 !rounded-xl top-[10%] !shadow-md !shadow-indigo-500/50 overflow-y-hidden flex flex-col">
         <div className="!w-full !relative !border-b flex items-center">
           {/* to done */}
           {/* {!searchingValue.startsWith("/") && (
@@ -263,17 +329,26 @@ export default function App() {
               pointerEvents="none"
               // eslint-disable-next-line react/no-children-prop
               children={
-                searchingValue.startsWith("#") ? (
-                  <HashtagIcon className="left-element !text-green-500"></HashtagIcon>
-                ) : (
-                  <MagnifyingGlassIcon className="!text-white left-element"></MagnifyingGlassIcon>
-                )
+                <>
+                  {searchingValue.startsWith("#") && (
+                    <HashtagIcon className="left-element !text-green-500"></HashtagIcon>
+                  )}
+
+                  {searchingValue.startsWith("@") && (
+                    <CubeIcon className="left-element !text-sky-200"></CubeIcon>
+                  )}
+
+                  {isNormalized() && (
+                    <MagnifyingGlassIcon className="!text-white left-element"></MagnifyingGlassIcon>
+                  )}
+                </>
               }
             />
+
             {searchingValue.startsWith("#") && (
               <Input
                 ref={disInputRef}
-                className="kk-input !focus:outline-none !appearance-none !w-full !text-[14px] !leading-6 !text-white !placeholder-slate-400 !py-4 !pl-10 !bg-gray-900 !shadow-sm !rounded-xl !rounded-b-none"
+                className="kk-input !focus:outline-none !appearance-none !w-full !text-[14px] !leading-6 !text-white !placeholder-slate-400 !bg-gray-900 !shadow-sm !rounded-xl !rounded-b-none placeholder-slate-400 focus:border-sky-500 focus:ring-sky-500 focus:ring-1"
                 type="text"
                 aria-label="Input a tab name"
                 placeholder="Input a tab name..."
@@ -283,16 +358,25 @@ export default function App() {
                     disInputRef.current.value.length === 0
                   ) {
                     setSearchingValue("");
-                    setTimeout(() => {
-                      inputRef.current.focus();
-                    }, 0);
+                    // setTimeout(() => {
+                    //   inputRef.current.focus();
+                    // }, 0);
                     return;
                   }
                   setSearchingValue("#" + evt.target.value);
                 }}
-                onKeyUp={(event) => {
-                  if (isSlash) return;
-                  if (event.key.toLocaleLowerCase() === "enter") {
+                onKeyUp={(evt: React.ChangeEvent<HTMLInputElement> | any) => {
+                  if (
+                    disInputRef.current.value.length === 0 &&
+                    evt.key === "Backspace"
+                  ) {
+                    setSearchingValue("");
+                    setTimeout(() => {
+                      inputRef.current.focus();
+                    }, 10);
+                  }
+
+                  if (evt.key === "Enter") {
                     let currentTab;
 
                     searchingTabs.some(
@@ -306,7 +390,7 @@ export default function App() {
                     // seletedIndex
                   }
 
-                  if (event.key.toLocaleLowerCase() === "arrowup") {
+                  if (evt.key === "ArrowUp") {
                     if (seletedIndex >= 0) {
                       setSelectedIndex(() => seletedIndex - 1);
 
@@ -316,7 +400,7 @@ export default function App() {
                     }
                   }
 
-                  if (event.key.toLocaleLowerCase() === "arrowdown") {
+                  if (evt.key === "ArrowDown") {
                     const maxIndex = searchingTabs.reduce(
                       (pre, next) => pre + next.children.length,
                       0
@@ -335,10 +419,80 @@ export default function App() {
               />
             )}
 
-            {!searchingValue.startsWith("#") && (
+            {searchingValue.startsWith("@") && (
+              <Input
+                ref={disAtInputRef}
+                className="kk-input !focus:outline-none !appearance-none !w-full !text-[14px] !leading-6 !text-white !placeholder-slate-400 !bg-gray-900 !shadow-sm !rounded-xl !rounded-b-none focus:border-sky-500 focus:ring-sky-500 focus:ring-1"
+                type="text"
+                aria-label="Input a tab attribute like: 'playing'"
+                placeholder="Input a tab attribute like: 'playing'"
+                onChange={(evt: React.ChangeEvent<HTMLInputElement> | any) => {
+                  if (
+                    evt.nativeEvent.inputType === "deleteContentBackward" &&
+                    disAtInputRef.current.value.length === 0
+                  ) {
+                    return;
+                  }
+                  setSearchingValue("@" + evt.target.value);
+                }}
+                onKeyUp={(evt: React.ChangeEvent<HTMLInputElement> | any) => {
+                  if (
+                    disAtInputRef.current.value.length === 0 &&
+                    evt.key === "Backspace"
+                  ) {
+                    setSearchingValue("");
+                    setTimeout(() => {
+                      inputRef.current.focus();
+                    }, 10);
+                  }
+
+                  if (evt.key === "Enter") {
+                    let currentTab;
+
+                    searchingTabs.some(
+                      (tab) =>
+                        (currentTab = tab.children.find(
+                          (c) => c.trueIndex === seletedIndex
+                        ))
+                    );
+
+                    goTab(currentTab as unknown as TabChild);
+                    // seletedIndex
+                  }
+
+                  if (evt.key === "ArrowUp") {
+                    if (seletedIndex >= 0) {
+                      setSelectedIndex(() => seletedIndex - 1);
+
+                      document
+                        .querySelector(`[data-index="${seletedIndex - 1}"]`)
+                        .scrollIntoView();
+                    }
+                  }
+
+                  if (evt.key === "ArrowDown") {
+                    const maxIndex = searchingTabs.reduce(
+                      (pre, next) => pre + next.children.length,
+                      0
+                    );
+
+                    if (seletedIndex < maxIndex - 1) {
+                      setSelectedIndex(() => seletedIndex + 1);
+
+                      document
+                        .querySelector(`[data-index="${seletedIndex + 1}"]`)
+                        .scrollIntoView();
+                    }
+                  }
+                  // console.log(event.target.classList);
+                }}
+              />
+            )}
+
+            {isNormalized() && (
               <Input
                 ref={inputRef}
-                className="kk-input !focus:outline-none !appearance-none !w-full !text-[14px] !leading-6 !text-white !placeholder-slate-400 !py-4 !pl-10 !bg-gray-900 !shadow-sm !rounded-xl !rounded-b-none"
+                className="kk-input !focus:outline-none !appearance-none !w-full !text-[14px] !leading-6 !text-white !placeholder-slate-400 !bg-gray-900 !shadow-sm !rounded-xl !rounded-b-none focus:border-sky-500 focus:ring-sky-500 focus:ring-1"
                 type="text"
                 aria-label="Input a tab name"
                 placeholder="Input a tab name..."
@@ -347,6 +501,14 @@ export default function App() {
 
                   if (evt.target.value.startsWith("/")) {
                     setSlash(true);
+
+                    return;
+                  }
+
+                  if (evt.target.value.startsWith("@")) {
+                    setTimeout(() => {
+                      disAtInputRef.current.focus();
+                    }, 0);
 
                     return;
                   }
@@ -428,7 +590,7 @@ export default function App() {
             {searchingTabs &&
               searchingTabs.map(
                 (tab, key) =>
-                  tab.children.length > 0 && (
+                  tab.children?.length > 0 && (
                     <li key={key} className="pl-2 mb-2">
                       <Disclosure defaultOpen>
                         {({ open }) => (
@@ -450,7 +612,7 @@ export default function App() {
                                   <li
                                     data-index={t.trueIndex}
                                     key={tk}
-                                    className={`!flex !items-center !leading-10 mr-5 hover:bg-slate-200/25 !rounded-md !overflow-x-hidden truncate ${
+                                    className={`!flex !items-center !leading-10 mr-1 hover:bg-slate-200/25 !rounded-md !overflow-x-hidden truncate ${
                                       seletedIndex === t.trueIndex
                                         ? "bg-slate-200/25"
                                         : ""
@@ -467,9 +629,18 @@ export default function App() {
                                       {t.label}
                                     </span>
 
-                                    {t.isPlaying && (
-                                      <SpeakerWaveIcon className="!ml-3 !h-4 !text-white" />
-                                    )}
+                                    {t.audible &&
+                                      (t.muted ? (
+                                        <SpeakerXMarkIcon
+                                          className="!ml-3 !h-4 mr-1 !text-white cursor-pointer"
+                                          onClick={() => muteBinder(t)}
+                                        />
+                                      ) : (
+                                        <SpeakerWaveIcon
+                                          className="!ml-3 !h-4 mr-1 !text-white cursor-pointer"
+                                          onClick={() => muteBinder(t)}
+                                        />
+                                      ))}
                                   </li>
                                 );
                               })}

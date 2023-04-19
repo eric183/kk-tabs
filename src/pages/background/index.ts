@@ -55,10 +55,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
               label: title,
               iconUrl: faviconUrl,
               url: url,
-              isPlaying: tab.audible,
+              audible: tab.audible,
               isActive: tab.active,
               pinned: tab.pinned,
               parentId: groupId,
+              muted: tab.mutedInfo.muted,
             });
           }
           const result = Object.keys(groups).map(function (groupId) {
@@ -78,6 +79,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const tabId = request.tabId;
     chrome.tabs.update(tabId, { active: true });
     sendResponse({ result: "success" });
+  }
+});
+
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+  if (request.command === "muteTab") {
+    const tabId = request.tabId;
+    const tab = await chrome.tabs.get(tabId);
+    const muted = !tab.mutedInfo.muted;
+
+    chrome.tabs.update(tabId, { muted });
+    sendResponse({
+      id: tabId,
+      muted: muted,
+    });
   }
 });
 

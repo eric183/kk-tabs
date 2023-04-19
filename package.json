@@ -1,7 +1,7 @@
 {
   "name": "kk-tabs",
-  "version": "0.0.1",
-  "description": "chrome extension boilerplate",
+  "version": "1.0.0",
+  "description": "CMD K your Tabs",
   "license": "MIT",
   "repository": {
     "type": "git",

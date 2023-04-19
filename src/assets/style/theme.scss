@@ -9,7 +9,22 @@
 .kktab-app-content {
   z-index: 10001 !important;
   font-size: 14px;
-  
+
+  input {
+    height: auto !important;
+    max-width: none !important;
+    padding: 16px 10px 16px 40px !important;
+    text-align: left !important;
+    &:focus-visible {
+      border: 1px solid rgb(99 102 241 / 0.5);
+      outline: none;
+    }
+  }
+
+  .kktab-app-list {
+    border: 1px solid rgb(17 24 39);
+  }
+
   .InputLeft-element {
     width: 20px;
     height: 20px;
@@ -19,6 +34,8 @@
   .kk-input {
     margin-top: 0 !important;
     margin-bottom: 0 !important;
+    border: 1px solid rgb(17 24 39);
+    border-bottom: 1px solid #fff;
   }
 
   img {
